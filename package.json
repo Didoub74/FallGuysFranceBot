@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": " TWITCH_CLIENT_ID=aiaao12cbpw4o84ni8qndm27fwsg1k TWITCH_APP_ACCESS_TOKEN=m4c6j2wl9fukanj1hmhb2fpx0e6siw node index.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +22,8 @@
     "discord.js": "^13.6.0",
     "ffmpeg-static": "^4.4.0",
     "igdb-api-node": "^5.0.1",
+    "node": "17.1.0",
+    "npm": "^8.9.0",
     "pm2": "^5.2.0",
     "sqlite3": "^5.0.5"
   },

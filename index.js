@@ -3,6 +3,8 @@ const Discord = require('discord.js');
 const { token } = require('./config.json');
 const fs = require('fs');
 
+require("http").createServer((_, res) => res.end("Alive!")).listen(8080)
+
 // Create a new client instance
 const client = new Discord.Client({
 	intents: 32767,
@@ -26,4 +28,4 @@ for (const file of eventFiles) {
 	require(`./handler/${handler}`)(client, Discord)
 });
 
-client.login(token);
+client.login(process.env['token']);
