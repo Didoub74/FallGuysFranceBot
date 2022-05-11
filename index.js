@@ -1,9 +1,12 @@
 // Require the necessary discord.js classes
 const Discord = require('discord.js');
-const { token } = require('./config.json');
 const fs = require('fs');
 
-require("http").createServer((_, res) => res.end("Alive!")).listen(8080)
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+require('http').createServer((_, res) => res.end('Actif!')).listen(8080);
 
 // Create a new client instance
 const client = new Discord.Client({
@@ -25,7 +28,7 @@ for (const file of eventFiles) {
 }
 
 ['error_handler'].forEach(handler => {
-	require(`./handler/${handler}`)(client, Discord)
+	require(`./handler/${handler}`)(client, Discord);
 });
 
 client.login(process.env['token']);
