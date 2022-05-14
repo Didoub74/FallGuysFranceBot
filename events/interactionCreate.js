@@ -4,7 +4,6 @@ const { rulesAcceptedRoleId, minorRoleId, majorRoleId, pcRoleId, ps4RoleId, menR
 const { QueryType, QueueRepeatMode } = require('discord-player');
 const player = require('../client/player.js');
 const igdb = require('igdb-api-node').default;
-const igdb_client = igdb(TWITCH_CLIENT_ID, TWITCH_APP_ACCESS_TOKEN);
 const axios = require('axios');
 const client = require('../index');
 const discordModals = require('discord-modals');
@@ -72,7 +71,7 @@ module.exports = {
 										.setLabel('🖊 Renommer')
 										.setStyle('SECONDARY'),
 								);
-							interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+							interaction.editReply({ embeds: [embed], components: [row], ephemeral: true });
 						}
 						else {
 							const embed = new MessageEmbed()
@@ -81,7 +80,7 @@ module.exports = {
 								.setDescription(`Le salon <#${interaction.member.voice.channel.id}> ne t'appartient pas et tu ne possèdes pas les permissions de le modifier.`)
 								.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 								.setTimestamp();
-							interaction.reply({ embeds: [embed], ephemeral: true });
+							interaction.editReply({ embeds: [embed], ephemeral: true });
 						}
 					}
 					else {
@@ -91,7 +90,7 @@ module.exports = {
 							.setDescription(`Le salon <#${interaction.member.voice.channel.id}> n'est pas un salon temporaire créé par moi !`)
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.reply({ embeds: [embed], ephemeral:true });
+						interaction.editReply({ embeds: [embed], ephemeral:true });
 					}
 				}
 				else {
@@ -101,7 +100,7 @@ module.exports = {
 						.setDescription('Vous devez être dans un salon vocal pour tenter de le gérer.')
 						.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 						.setTimestamp();
-					interaction.reply({ embeds: [embed], ephemeral:true });
+					interaction.editReply({ embeds: [embed], ephemeral:true });
 				}
 			}
 			if (interaction.customId === 'rename') {
@@ -139,7 +138,7 @@ module.exports = {
 								.addOptions({ label: '3 Places', value: '3places', emoji: '3️⃣' })
 								.addOptions({ label: '4 Places', value: '4places', emoji: '4️⃣' }),
 						);
-					interaction.reply({ embeds: [embed], components: [row], ephemeral: true });
+					interaction.editReply({ embeds: [embed], components: [row], ephemeral: true });
 				}
 				else {
 					const embed = new MessageEmbed()
@@ -148,7 +147,7 @@ module.exports = {
 						.setDescription('Vous devez être dans un salon vocal pour tenter de le gérer.')
 						.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 						.setTimestamp();
-					interaction.reply({ embeds: [embed], ephemeral:true });
+					interaction.editReply({ embeds: [embed], ephemeral:true });
 				}
 			}
 			/* if (interaction.customId === 'transfer') {
@@ -173,7 +172,7 @@ module.exports = {
 							.setDescription('Vous devez être plus de 1 dans le salon pour transférer le rôle de chef du salon.')
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.reply({ embeds: [embed], ephemeral:true });
+						interaction.editReply({ embeds: [embed], ephemeral:true });
 					}
 				}else {
 					const embed = new MessageEmbed()
@@ -182,24 +181,13 @@ module.exports = {
 						.setDescription('Vous devez être dans un salon vocal pour tenter de le gérer.')
 						.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 						.setTimestamp();
-					interaction.reply({ embeds: [embed], ephemeral:true });
+					interaction.editReply({ embeds: [embed], ephemeral:true });
 				}
 			} */
 		}
 		if (interaction.isCommand()) {
+			await interaction.reply('⏳ Merci de patienter quelque secondes... ⏳');
 			let commandFind = false;
-			if (interaction.commandName === 'uptime') {
-				commandFind = true;
-				let totalSeconds = (client.uptime / 1000);
-				const days = Math.floor(totalSeconds / 86400);
-				totalSeconds %= 86400;
-				const hours = Math.floor(totalSeconds / 3600);
-				totalSeconds %= 3600;
-				const minutes = Math.floor(totalSeconds / 60);
-				const seconds = Math.floor(totalSeconds % 60);
-				const uptime = `Je suis en ligne depuis ${days} jours, ${hours} heures, ${minutes} minutes et ${seconds} secondes`;
-				interaction.reply({ content: uptime });
-			}
 			if (interaction.commandName === 'admin') {
 				if (interaction.options.getSubcommand() === 'ban') {
 					commandFind = true;
@@ -213,10 +201,10 @@ module.exports = {
 						catch (error) {
 							console.error('Impossible d\'effectuer le ban correctement: ', error);
 						}
-						interaction.reply({ content: 'J\'ai banni ' + member.user.tag + ' suite à la demande de ' + interaction.member.user.tag });
+						interaction.editReply({ content: 'J\'ai banni ' + member.user.tag + ' suite à la demande de ' + interaction.member.user.tag });
 					}
 					else {
-						interaction.reply({
+						interaction.editReply({
 							content: 'Tu ne possèdes pas la permissions d\'effectuer cette action !',
 							ephemeral: true,
 						});
@@ -235,14 +223,14 @@ module.exports = {
 							catch (error) {
 								console.error('Impossible d\'expulser le membre correctement', error);
 							}
-							interaction.reply({ content: 'J\'ai expulsé ' + member.user.tag + ' suite à la demande de ' + interaction.member.user.tag });
+							interaction.editReply({ content: 'J\'ai expulsé ' + member.user.tag + ' suite à la demande de ' + interaction.member.user.tag });
 						}
 						else {
-							interaction.reply({ content: 'Tu ne peux pas t\'auto expulser...', ephemeral:true });
+							interaction.editReply({ content: 'Tu ne peux pas t\'auto expulser...', ephemeral:true });
 						}
 					}
 					else {
-						interaction.reply({
+						interaction.editReply({
 							content: 'Tu ne possèdes pas la permissions d\'effectuer cette action !',
 							ephemeral: true,
 						});
@@ -253,20 +241,20 @@ module.exports = {
 					if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
 						if (interaction.options.getNumber('nombre') <= 100) {
 							await interaction.channel.bulkDelete(interaction.options.getNumber('nombre'));
-							await interaction.reply({
+							await interaction.editReply({
 								content: `J'ai supprimé ${interaction.options.getNumber('nombre')} message(s) avec succès.`,
 								ephemeral: true,
 							});
 						}
 						else {
-							interaction.reply({
+							interaction.editReply({
 								content: 'Je ne peux pas supprimer plus de 100 messages d\'un seul coups. Merci de réessayer avec un nombre inférieur ou égal à 100.',
 								ephemeral: true,
 							});
 						}
 					}
 					else {
-						interaction.reply({
+						interaction.editReply({
 							content: 'Tu ne possèdes pas la permissions d\'effectuer cette action !',
 							ephemeral: true,
 						});
@@ -278,7 +266,7 @@ module.exports = {
 					commandFind = true;
 					const songTitle = interaction.options.getString('nom');
 					if (!interaction.member.voice.channel) {
-						interaction.reply({
+						interaction.editReply({
 							content: 'Merci de rejoindre un salon vocal avant.',
 						});
 					}
@@ -297,7 +285,7 @@ module.exports = {
 
 					await queue.connect(interaction.member.voice.channel);
 
-					interaction.reply({ content: `Je joue désormais ${songTitle}` });
+					interaction.editReply({ content: `Je joue désormais ${songTitle}` });
 
 					searchResult.playlist
 						? queue.addTracks(searchResult.tracks)
@@ -309,13 +297,13 @@ module.exports = {
 					commandFind = true;
 					const queue = player.getQueue(interaction.guildId);
 					queue.setPaused(true);
-					interaction.reply({ content: 'La chanson à bien été mise en pause !' });
+					interaction.editReply({ content: 'La chanson à bien été mise en pause !' });
 				}
 				if (interaction.options.getSubcommand() === 'resume') {
 					commandFind = true;
 					const queue = player.getQueue(interaction.guildId);
 					queue.setPaused(false);
-					interaction.reply({ content: 'La chanson à bien été reprise !' });
+					interaction.editReply({ content: 'La chanson à bien été reprise !' });
 				}
 				if (interaction.options.getSubcommand() === 'paroles') {
 					commandFind = true;
@@ -324,7 +312,7 @@ module.exports = {
 					const sendLyrics = (songTitle) => {
 						return createResponse(songTitle)
 							.then((res) => {
-								interaction.reply(res);
+								interaction.editReply(res);
 							})
 							.catch((err) => console.log({ err }));
 					};
@@ -333,7 +321,7 @@ module.exports = {
 
 					const queue = player.getQueue(interaction.guildId);
 					if (!queue?.playing) {
-						interaction.reply({
+						interaction.editReply({
 							content: 'Pas de musique en cours de lecture',
 						});
 					}
@@ -344,7 +332,7 @@ module.exports = {
 					commandFind = true;
 					const queue = player.getQueue(interaction.guildId);
 					if (!queue?.playing) {
-						interaction.reply({
+						interaction.editReply({
 							content: 'Pas de musique est en cours de lecture.',
 						});
 					}
@@ -352,7 +340,8 @@ module.exports = {
 					const progress = queue.createProgressBar();
 					const perc = queue.getPlayerTimestamp();
 
-					interaction.reply({
+					interaction.editReply({
+						content: '',
 						embeds: [
 							{
 								title: 'Chanson actuelle',
@@ -373,36 +362,36 @@ module.exports = {
 				}
 				if (interaction.options.getSubcommand() === 'boucle') {
 					const queue = player.getQueue(interaction.guildId);
-					if (!queue || !queue.playing) return void interaction.reply({ content: '❌ | Pas de chanson est en cours de lecture!' });
+					if (!queue || !queue.playing) return void interaction.editReply({ content: '❌ | Pas de chanson est en cours de lecture!' });
 					const loopMode = interaction.options.get('mode').value;
 					const success = queue.setRepeatMode(loopMode);
 					const mode = loopMode === QueueRepeatMode.TRACK ? '🔂' : loopMode === QueueRepeatMode.QUEUE ? '🔁' : '▶';
-					return void interaction.reply({ content: success ? `${mode} | Mode boucle mis à jours!` : '❌ | Impossible de mettre à jours le mode boucle!' });
+					return void interaction.editReply({ content: success ? `${mode} | Mode boucle mis à jours!` : '❌ | Impossible de mettre à jours le mode boucle!' });
 				}
 				if (interaction.options.getSubcommand() === 'volume') {
 					const volumePercentage = interaction.options.getInteger('pourcentage');
 					const queue = player.getQueue(interaction.guildId);
 					if (!queue?.playing) {
-						return interaction.reply({
+						return interaction.editReply({
 							content: 'Pas de musique en cours de lecture',
 						});
 					}
 
 					if (!volumePercentage) {
-						return interaction.reply({
+						return interaction.editReply({
 							content: `Le volume actuel est de \`${queue.volume}%\``,
 						});
 					}
 
 					if (volumePercentage < 0 || volumePercentage > 100) {
-						return interaction.reply({
+						return interaction.editReply({
 							content: 'Le volume doit être entre 0 et 100',
 						});
 					}
 
 					queue.setVolume(volumePercentage);
 
-					return interaction.reply({
+					return interaction.editReply({
 						content: `Le volume a été réglé sur \`${volumePercentage}%\``,
 					});
 				}
@@ -453,7 +442,7 @@ module.exports = {
 							{ name: 'Niveau', value: `${level}`, inline: true },
 							{ name: 'Classement', value: `${rank}`, inline: true },
 						);
-					interaction.reply({ embeds: [embed] });
+					interaction.editReply({ embeds: [embed] });
 				}
 				if (interaction.options.getSubcommand() === 'classement') {
 					commandFind = true;
@@ -487,19 +476,19 @@ module.exports = {
 							{ name: 'XP', value: `${xp}`, inline: true },
 						);
 					}
-					interaction.reply({ embeds: [embed] });
+					interaction.editReply({ embeds: [embed] });
 				}
 			}
 			if (interaction.commandName === 'jeu') {
 				if (interaction.options.getSubcommand('info')) {
-					const gameName = interaction.options.getString('nom')
+					const gameName = interaction.options.getString('nom');
 					const response = await igdb()
 						.fields(['*'])
 
 						.limit(1)
 						.offset(0)
 
-						.where(`name = "${gameName}"`)
+						.where(`search "${gameName}";`)
 
 						.request('/games');
 
@@ -507,7 +496,7 @@ module.exports = {
 				}
 			}
 			if (!commandFind) {
-				interaction.reply({ content: 'La commande demandé n\'existe pas. Si tu pense que ceci est une erreur, envoie un message à Didoub74#3977', ephemeral:true });
+				interaction.editReply({ content: 'La commande demandé n\'existe pas. Si tu pense que ceci est une erreur, envoie un message à Didoub74#3977', ephemeral:true });
 			}
 		}
 		if (interaction.isSelectMenu()) {
@@ -523,7 +512,7 @@ module.exports = {
 							.setDescription('J\'ai bien réglé le nombre de places sur 2')
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.reply({ embeds: [embed], ephemeral: true });
+						interaction.editReply({ embeds: [embed], ephemeral: true });
 					}
 					else {
 						const embed = new MessageEmbed()
@@ -532,7 +521,7 @@ module.exports = {
 							.setDescription('Vous devez être dans un salon vocal pour tenter de le gérer.')
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.reply({ embeds: [embed], ephemeral: true });
+						interaction.editReply({ embeds: [embed], ephemeral: true });
 					}
 				}
 				if (interaction.values[0] === '3places') {
@@ -545,7 +534,7 @@ module.exports = {
 							.setDescription('J\'ai bien réglé le nombre de places sur 3')
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.reply({ embeds: [embed], ephemeral: true });
+						interaction.editReply({ embeds: [embed], ephemeral: true });
 					}
 					else {
 						const embed = new MessageEmbed()
@@ -554,7 +543,7 @@ module.exports = {
 							.setDescription('Vous devez être dans un salon vocal pour tenter de le gérer.')
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.reply({ embeds: [embed], ephemeral: true });
+						interaction.editReply({ embeds: [embed], ephemeral: true });
 					}
 				}
 				if (interaction.values[0] === '4places') {
@@ -567,7 +556,7 @@ module.exports = {
 							.setDescription('J\'ai bien réglé le nombre de places sur 4')
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.reply({ embeds: [embed], ephemeral: true });
+						interaction.editReply({ embeds: [embed], ephemeral: true });
 					}
 					else {
 						const embed = new MessageEmbed()
@@ -576,7 +565,7 @@ module.exports = {
 							.setDescription('Vous devez être dans un salon vocal pour tenter de le gérer.')
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.reply({ embeds: [embed], ephemeral: true });
+						interaction.editReply({ embeds: [embed], ephemeral: true });
 					}
 				}
 
@@ -588,11 +577,11 @@ module.exports = {
 function checkIfOwned(interaction, roleId, roleName) {
 	if (!interaction.member.roles.cache.some(role => role.id === roleId)) {
 		interaction.member.roles.add(roleId);
-		interaction.reply({ content: 'Vous avez obtenu le rôle "' + roleName + '" !', ephemeral: true });
+		interaction.editReply({ content: 'Vous avez obtenu le rôle "' + roleName + '" !', ephemeral: true });
 	}
 	else {
 		interaction.member.roles.remove(roleId);
-		interaction.reply({ content: 'Vous avez perdu le rôle "' + roleName + '" !', ephemeral: true });
+		interaction.editReply({ content: 'Vous avez perdu le rôle "' + roleName + '" !', ephemeral: true });
 	}
 }
 const getLyrics = (title) =>

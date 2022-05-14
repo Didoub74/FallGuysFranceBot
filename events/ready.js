@@ -1,6 +1,10 @@
 const sqlite3 = require('sqlite3').verbose();
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const { welcomeChannelId } = require('../config.json');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
 module.exports = {
 	name: 'ready',
 	once: true,
@@ -109,5 +113,11 @@ module.exports = {
 			);
 
 		channel.send({ embeds: [channelEmbed], components: [row] }); */
+		let memberCount = client.guilds.fetch(process.env['guildId']).then(async (Guild) => {
+			memberCount = Guild.memberCount;
+		});
+		await new Promise(resolve => setTimeout(resolve, 100));
+		client.user.setPresence({ activities: [{ name: `Bot officiel du serveur Fall Guys France avec ${memberCount} membres.` }], status: 'dnd' });
+
 	},
 };
