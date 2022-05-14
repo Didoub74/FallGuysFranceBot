@@ -1,5 +1,13 @@
 const { Permissions, MessageEmbed, MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
-const { rulesAcceptedRoleId, minorRoleId, majorRoleId, pcRoleId, ps4RoleId, menRoleId, womenRoleId, TWITCH_CLIENT_ID, TWITCH_APP_ACCESS_TOKEN } = require('../config.json');
+const {
+	rulesAcceptedRoleId,
+	minorRoleId,
+	majorRoleId,
+	pcRoleId,
+	ps4RoleId,
+	menRoleId,
+	womenRoleId,
+} = require('../config.json');
 
 const { QueryType, QueueRepeatMode } = require('discord-player');
 const player = require('../client/player.js');
@@ -8,6 +16,8 @@ const axios = require('axios');
 const client = require('../index');
 const discordModals = require('discord-modals');
 const { Modal, TextInputComponent, showModal } = require('discord-modals');
+const fs = require('fs');
+const path = require('path');
 discordModals(client);
 const sqlite3 = require('sqlite3').verbose();
 module.exports = {
@@ -53,9 +63,13 @@ module.exports = {
 								.setTitle('Gestion du salon ' + interaction.member.voice.channel.name)
 								.setDescription(`Vous dirigez le salon <#${interaction.member.voice.channel.id}>.\nVous pouvez gérer ce salon à l'aide des boutons ci-dessous.`)
 								.addFields(
-									{ name: '🔢 Places', value: 'Changez le nombre de place de ce salon.', inline:true },
+									{
+										name: '🔢 Places',
+										value: 'Changez le nombre de place de ce salon.',
+										inline: true,
+									},
 									// { name: '📝 Transférer', value: 'Transférer le rôle de chef de salon à un autre membre.', inline:true },
-									{ name: '🖊 Renommer', value: 'Changer le nom du salon vocal', inline:true })
+									{ name: '🖊 Renommer', value: 'Changer le nom du salon vocal', inline: true })
 								.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 								.setTimestamp();
 							const row = new MessageActionRow()
@@ -90,7 +104,7 @@ module.exports = {
 							.setDescription(`Le salon <#${interaction.member.voice.channel.id}> n'est pas un salon temporaire créé par moi !`)
 							.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 							.setTimestamp();
-						interaction.editReply({ embeds: [embed], ephemeral:true });
+						interaction.editReply({ embeds: [embed], ephemeral: true });
 					}
 				}
 				else {
@@ -100,7 +114,7 @@ module.exports = {
 						.setDescription('Vous devez être dans un salon vocal pour tenter de le gérer.')
 						.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 						.setTimestamp();
-					interaction.editReply({ embeds: [embed], ephemeral:true });
+					interaction.editReply({ embeds: [embed], ephemeral: true });
 				}
 			}
 			if (interaction.customId === 'rename') {
@@ -147,7 +161,7 @@ module.exports = {
 						.setDescription('Vous devez être dans un salon vocal pour tenter de le gérer.')
 						.setFooter({ text: 'Fall Guys France', iconURL: client.user.avatarURL() })
 						.setTimestamp();
-					interaction.editReply({ embeds: [embed], ephemeral:true });
+					interaction.editReply({ embeds: [embed], ephemeral: true });
 				}
 			}
 			/* if (interaction.customId === 'transfer') {
@@ -187,83 +201,21 @@ module.exports = {
 		}
 		if (interaction.isCommand()) {
 			await interaction.reply('⏳ Merci de patienter quelque secondes... ⏳');
-			let commandFind = false;
-			if (interaction.commandName === 'admin') {
-				if (interaction.options.getSubcommand() === 'ban') {
-					commandFind = true;
-					if (interaction.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
-						const member = interaction.options.getMember('membre');
-						const motif = interaction.options.getString('motif');
-						try {
-							await member.send('Tu as été bannis de ' + member.guild.name + ' par ' + interaction.member.user.tag + '.');
-							await member.ban({ reason: '' + motif + '' });
-						}
-						catch (error) {
-							console.error('Impossible d\'effectuer le ban correctement: ', error);
-						}
-						interaction.editReply({ content: 'J\'ai banni ' + member.user.tag + ' suite à la demande de ' + interaction.member.user.tag });
-					}
-					else {
-						interaction.editReply({
-							content: 'Tu ne possèdes pas la permissions d\'effectuer cette action !',
-							ephemeral: true,
-						});
-					}
-				}
-				if (interaction.options.getSubcommand() === 'kick') {
-					commandFind = true;
-					if (interaction.member.permissions.has(Permissions.FLAGS.KICK_MEMBERS)) {
-						const member = interaction.options.getMember('membre');
-						const motif = interaction.options.getString('motif');
-						if (member.user.tag !== interaction.member.user.tag) {
-							try {
-								await member.send('Tu as été expulsé de ' + member.guild.name + ' par ' + interaction.member.user.tag + '.');
-								await member.kick({ reason: '' + motif + '' });
-							}
-							catch (error) {
-								console.error('Impossible d\'expulser le membre correctement', error);
-							}
-							interaction.editReply({ content: 'J\'ai expulsé ' + member.user.tag + ' suite à la demande de ' + interaction.member.user.tag });
-						}
-						else {
-							interaction.editReply({ content: 'Tu ne peux pas t\'auto expulser...', ephemeral:true });
+
+			readDir('commands', function(err, results) {
+				if (err) throw err;
+				results.forEach(function(result) {
+					const command = require(`${result}`);
+					if (command.haveSubParent) {
+						if (interaction.options.getSubcommand() === command.name) {
+							command.execute(interaction);
+							console.log('Handler Used !');
 						}
 					}
-					else {
-						interaction.editReply({
-							content: 'Tu ne possèdes pas la permissions d\'effectuer cette action !',
-							ephemeral: true,
-						});
-					}
-				}
-				if (interaction.options.getSubcommand() === 'clear') {
-					commandFind = true;
-					if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-						if (interaction.options.getNumber('nombre') <= 100) {
-							await interaction.channel.bulkDelete(interaction.options.getNumber('nombre'));
-							await interaction.editReply({
-								content: `J'ai supprimé ${interaction.options.getNumber('nombre')} message(s) avec succès.`,
-								ephemeral: true,
-							});
-						}
-						else {
-							interaction.editReply({
-								content: 'Je ne peux pas supprimer plus de 100 messages d\'un seul coups. Merci de réessayer avec un nombre inférieur ou égal à 100.',
-								ephemeral: true,
-							});
-						}
-					}
-					else {
-						interaction.editReply({
-							content: 'Tu ne possèdes pas la permissions d\'effectuer cette action !',
-							ephemeral: true,
-						});
-					}
-				}
-			}
+				});
+			});
 			if (interaction.commandName === 'musique') {
 				if (interaction.options.getSubcommand() === 'play') {
-					commandFind = true;
 					const songTitle = interaction.options.getString('nom');
 					if (!interaction.member.voice.channel) {
 						interaction.editReply({
@@ -294,19 +246,16 @@ module.exports = {
 					if (!queue.playing) await queue.play();
 				}
 				if (interaction.options.getSubcommand() === 'pause') {
-					commandFind = true;
 					const queue = player.getQueue(interaction.guildId);
 					queue.setPaused(true);
 					interaction.editReply({ content: 'La chanson à bien été mise en pause !' });
 				}
 				if (interaction.options.getSubcommand() === 'resume') {
-					commandFind = true;
 					const queue = player.getQueue(interaction.guildId);
 					queue.setPaused(false);
 					interaction.editReply({ content: 'La chanson à bien été reprise !' });
 				}
 				if (interaction.options.getSubcommand() === 'paroles') {
-					commandFind = true;
 
 					const title = interaction.options.getString('titre');
 					const sendLyrics = (songTitle) => {
@@ -329,7 +278,6 @@ module.exports = {
 					return sendLyrics(queue.current.title);
 				}
 				if (interaction.options.getSubcommand() === 'actuelle') {
-					commandFind = true;
 					const queue = player.getQueue(interaction.guildId);
 					if (!queue?.playing) {
 						interaction.editReply({
@@ -398,7 +346,6 @@ module.exports = {
 			}
 			if (interaction.commandName === 'niveau') {
 				if (interaction.options.getSubcommand() === 'membre') {
-					commandFind = true;
 					const membre = interaction.options.getUser('membre');
 					let id;
 					let name;
@@ -445,7 +392,6 @@ module.exports = {
 					interaction.editReply({ embeds: [embed] });
 				}
 				if (interaction.options.getSubcommand() === 'classement') {
-					commandFind = true;
 					const db = new sqlite3.Database('userData');
 
 					const top = [];
@@ -465,7 +411,7 @@ module.exports = {
 						interaction.guild.members.fetch(userId).then((user) => {
 							name = user.user.username;
 						});
-						db.each('SELECT xp, level FROM level WHERE userId = ?', [ userId ], async (err, row) => {
+						db.each('SELECT xp, level FROM level WHERE userId = ?', [userId], async (err, row) => {
 							xp = row.xp;
 							console.log(row);
 						});
@@ -494,9 +440,6 @@ module.exports = {
 
 					console.log(response.data);
 				}
-			}
-			if (!commandFind) {
-				interaction.editReply({ content: 'La commande demandé n\'existe pas. Si tu pense que ceci est une erreur, envoie un message à Didoub74#3977', ephemeral:true });
 			}
 		}
 		if (interaction.isSelectMenu()) {
@@ -577,13 +520,14 @@ module.exports = {
 function checkIfOwned(interaction, roleId, roleName) {
 	if (!interaction.member.roles.cache.some(role => role.id === roleId)) {
 		interaction.member.roles.add(roleId);
-		interaction.editReply({ content: 'Vous avez obtenu le rôle "' + roleName + '" !', ephemeral: true });
+		interaction.reply({ content: 'Vous avez obtenu le rôle "' + roleName + '" !', ephemeral: true });
 	}
 	else {
 		interaction.member.roles.remove(roleId);
-		interaction.editReply({ content: 'Vous avez perdu le rôle "' + roleName + '" !', ephemeral: true });
+		interaction.reply({ content: 'Vous avez perdu le rôle "' + roleName + '" !', ephemeral: true });
 	}
 }
+
 const getLyrics = (title) =>
 	// eslint-disable-next-line no-async-promise-executor
 	new Promise(async (ful, rej) => {
@@ -627,3 +571,29 @@ const createResponse = async (title) => {
 		return 'Je ne suis pas capable de trouver la chanson que vous avez demandé :(';
 	}
 };
+
+function readDir(dir, done) {
+	let results = [];
+	fs.readdir(dir, function(err, list) {
+		if (err) return done(err);
+		let i = 0;
+		(function next() {
+			let file = list[i++];
+			if (!file) return done(null, results);
+			file = path.resolve(dir, file);
+			fs.stat(file, function(err, stat) {
+				if (stat && stat.isDirectory()) {
+					readDir(file, function(err, res) {
+						results = results.concat(res);
+						next();
+					});
+				}
+				else {
+					results.push(file);
+					next();
+				}
+			});
+		})();
+	});
+	return results;
+}
