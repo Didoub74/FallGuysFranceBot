@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "eslint": "^8.14.0",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "genius-lyrics": "^4.3.8"
   }
 }

@@ -59,7 +59,7 @@ const commands = [
 				.setDescription('Met en pause la musique.'))
 		.addSubcommand(subcommand =>
 			subcommand
-				.setName('resume')
+				.setName('reprendre')
 				.setDescription('Reprend la musique mise en pause.'))
 		.addSubcommand(subcommand =>
 			subcommand
